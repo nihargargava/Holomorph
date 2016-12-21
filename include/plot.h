@@ -3,13 +3,19 @@
 
 //This header requires glew and glfw3 and std complex headerfile
 
+struct coordinate
+{	GLfloat x;
+	GLfloat y;
+
+};
+
 class plot
 {
 	
 	GLuint VAO;
 	GLuint VBO;
 	GLuint EBO;
-	std::vector<vec2> vertices;
+	std::vector<coordinate> vertices;
 	std::vector<GLuint> indices;
 
 public:
@@ -17,7 +23,7 @@ public:
 	{
 		glGenVertexArrays(1, &VAO);
 	 	glGenBuffers(1, &VBO);
-	 	glGenBuffer(1,&EBO);
+	 	glGenBuffers(1,&EBO);
 	}
 	void prepare()
 	{
@@ -38,8 +44,8 @@ public:
 	}
 	void loadFrame(std::complex<GLfloat> UL, std::complex<GLfloat> BR, int hslots, int vslots) //To get a wireframe object
 	{	
-		GLfloat width = std:real(UL)-std:real(BR);
-		GLfloat height = std:imag(UL)-std:imag(BR);
+		GLfloat width = std::real(UL)-std::real(BR);
+		GLfloat height = std::imag(UL)-std::imag(BR);
 		GLfloat hstep = width/hslots;
 		GLfloat vstep = height/vslots;
 	}
