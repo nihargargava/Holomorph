@@ -83,8 +83,15 @@ int main()
 
         // Render
         // Clear the colorbuffer
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+
+        //Putting time value in the vertex shader
+        GLfloat timeValue = glfwGetTime();
+        GLfloat t = (sin(timeValue) / 2) + 0.5;
+        GLint vertextimeLocation = glGetUniformLocation(ourShader.Program, "t");
+        glUniform1f(vertextimeLocation, t);
 
         // Draw the triangle
         ourShader.Use();
