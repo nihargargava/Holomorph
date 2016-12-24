@@ -2,8 +2,11 @@
 
 out vec4 color;
 
+in float flag;
+
 void main()
 {
-    color = vec4(0.0f , 0.0f, 1.0f, 1.0f);
+    if(flag>0.5) color = vec4(0.00f , 0.0f, 1.0f, 1.0f);
+    else color = vec4(0.80f , 0.8f, 0.8f, 1.0f);
 
 }

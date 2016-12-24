@@ -1,7 +1,7 @@
 #ifndef PLOT_H_INCLUDED
 #define PLOT_H_INCLUDED
 
-#define PLOT_TESS 0.0001
+#define PLOT_TESS 0.003f
 
 //This header requires glew and glfw3 and std complex headerfile
 
@@ -17,10 +17,11 @@ class plot
 	GLuint VAO;
 	GLuint VBO;
 	GLuint EBO;
-	std::vector<coordinate> vertices;
-	std::vector<GLuint> indices;
+	
 
 public:
+	std::vector<coordinate> vertices;
+	std::vector<GLuint> indices;
 	plot()
 	{
 		glGenVertexArrays(1, &VAO);
@@ -29,6 +30,8 @@ public:
 	}
 	void prepare()
 	{
+
+
 		// 1. Bind Vertex Array Object
 		glBindVertexArray(VAO);
 		    // 2. Copy our vertices array in a vertex buffer for OpenGL to use
@@ -40,8 +43,12 @@ public:
 		    // 3. Then set the vertex attributes pointers
 		    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
 		    glEnableVertexAttribArray(0);  
+
+		    glLineWidth(1.50f);
 		// 4. Unbind VAO (NOT the EBO)
 		glBindVertexArray(0);
+
+		
 
 	}
 	void loadFrame(std::complex<GLfloat> UL, std::complex<GLfloat> BR, int hslots, int vslots) //To get a wireframe object
@@ -50,13 +57,15 @@ public:
 		GLfloat height = std::imag(UL)-std::imag(BR);
 		GLfloat hstep = width/(hslots);
 		GLfloat vstep = height/(vslots);
-		GLuint h_tess = (GLuint) hstep/PLOT_TESS;
-		GLuint v_tess = (GLuint) vstep/PLOT_TESS;
+		GLuint h_tess = fabs( hstep/PLOT_TESS );
+		GLuint v_tess = fabs( vstep/PLOT_TESS );
 		GLfloat hsstep = hstep/(h_tess);
 		GLfloat vsstep = vstep/(v_tess);
 		GLuint v_attach=0;
 		std::vector<GLuint> h_attach;
 		GLuint current_attach;
+
+		
 		for (int i = 0; i < hslots+1 ; i++)
 		{
 			for(int j=0; j< vslots+1; j++)
@@ -66,10 +75,16 @@ public:
 				z.y=std::imag(UL) - j*(vstep);
 				vertices.push_back(z);
 				current_attach = vertices.size()-1;
+				if(!(i==0)  )
+				{	indices.push_back(current_attach);
+					indices.push_back(h_attach.at(j));
+				}
+
 				if(!(i==hslots))
-				{
+				{	//std::cout<<"\nGoing in for loop. h_tess:"<<h_tess;
 					for ( int ia =1; ia < h_tess ; ia++)
 					{
+						//std::cout<<"\nLooking at ia:"<<ia;
 						z.x = vertices[current_attach].x + ia*hsstep; 
 						z.y = vertices[current_attach].y;
 						vertices.push_back(z);
@@ -83,20 +98,27 @@ public:
 							indices.push_back(vertices.size()-2);
 							indices.push_back(vertices.size()-1);
 						}	
-
+						//std::cout<<"\nLooking at ia:"<<ia;
 						if(ia==h_tess-1)
-						{
+						{	//std::cout<<"\nLooking at i";
+							
 							if(i==0)
 							{
 								h_attach.push_back(vertices.size()-1);
+								//std::cout<<"\n Adding at "<<j;
 							}
 							else
 							{
-								h_attach[j]=vertices.size()-1;
+								h_attach.at(j)=vertices.size()-1;
 							}
 						}
 					}
 
+				}
+				if(!(j==0) )
+				{	
+					indices.push_back(current_attach);
+					indices.push_back(v_attach);
 				}
 
 				if(!(j==vslots))
@@ -112,37 +134,40 @@ public:
 							indices.push_back(vertices.size()-1);
 						}
 						else
-						{
+						{	
 							indices.push_back(vertices.size()-2);
 							indices.push_back(vertices.size()-1);
 						}	
 
 						if(ja==v_tess-1)
 						{
+							
 							v_attach=vertices.size()-1;
 						}
 					}
 
 				}
-				if(!(i==0))
-				{
-					indices.push_back(current_attach);
-					indices.push_back(h_attach[j]);
-				}
-				if(!(j==0))
-				{
-					indices.push_back(current_attach);
-					indices.push_back(v_attach);
-				}
+				
+				
 			}
+
+
 		}
+
+
 
 	}
 	void draw()
 	{
         glBindVertexArray(VAO);
-        glDrawArrays(GL_LINES, 0, vertices.size());
+        glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT , 0);
         glBindVertexArray(0);
+	}
+
+	void kill()
+	{
+		glDeleteVertexArrays(1, &VAO);
+  		glDeleteBuffers(1, &VBO);
 	}
 
 	
